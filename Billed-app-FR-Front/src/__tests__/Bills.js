@@ -15,6 +15,18 @@ import router from '../app/Router';
 jest.mock('../app/store', () => mockStore);
 
 describe('Given I am connected as an employee', () => {
+  describe('When I am on Bills page but it is loading', () => {
+    test('Then, Loading page should be rendered', () => {
+      document.body.innerHTML = BillsUI({ loading: true });
+      expect(screen.getAllByText('Loading...')).toBeTruthy();
+    });
+  });
+  describe('When I am on Bills page but back-end send an error message', () => {
+    test('Then, Error page should be rendered', () => {
+      document.body.innerHTML = BillsUI({ error: 'some error message' });
+      expect(screen.getAllByText('Erreur')).toBeTruthy();
+    });
+  });
   describe('When I am on Bills Page', () => {
     test('Then bill icon in vertical layout should be highlighted', async () => {
       Object.defineProperty(window, 'localStorage', {

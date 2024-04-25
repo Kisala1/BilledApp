@@ -16,26 +16,28 @@ export default class NewBill {
     this.fileName = null;
     this.billId = null;
     new Logout({ document, localStorage, onNavigate });
+    
   }
   handleChangeFile = (e) => {
-    e.preventDefault();
     const fileInput = this.document.querySelector(`input[data-testid="file"]`);
     const file = fileInput.files[0];
     if (!file) {
+      // e.preventDefault();
       throw new Error('A file must be selected.');
     }
     const filePath = e.target.value.split(/\\/g);
     const fileName = filePath[filePath.length - 1];
+    const fileExtension = fileName.split('.').pop();
     const formData = new FormData();
     const email = JSON.parse(localStorage.getItem('user')).email;
     formData.append('file', file);
     formData.append('email', email);
 
     const allowedExtensions = ['.png', '.jpeg', '.jpg'];
-    const fileExtension = fileName.split('.').pop();
     if (!allowedExtensions.includes(`.${fileExtension}`)) {
       e.preventDefault();
-      alert('Unsupported file type. Supported types: .png, .jpeg, .jpg')
+      fileInput.value = '';
+      throw new Error('Supported files: .png, .jpeg, .jpg');
     }
 
     this.store
