@@ -1,6 +1,6 @@
-import { ROUTES_PATH } from '../constants/routes.js';
-import { formatDate, formatStatus } from '../app/format.js';
-import Logout from './Logout.js';
+import { ROUTES_PATH } from "../constants/routes.js";
+import { formatDate, formatStatus } from "../app/format.js";
+import Logout from "./Logout.js";
 
 export default class {
   constructor({ document, onNavigate, store, localStorage }) {
@@ -11,28 +11,35 @@ export default class {
       `button[data-testid="btn-new-bill"]`
     );
     if (buttonNewBill)
-      buttonNewBill.addEventListener('click', this.handleClickNewBill);
+      buttonNewBill.addEventListener("click", this.handleClickNewBill);
     const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`);
     if (iconEye)
       iconEye.forEach((icon) => {
-        icon.addEventListener('click', () => this.handleClickIconEye(icon));
+        icon.addEventListener("click", () => this.handleClickIconEye(icon));
       });
     new Logout({ document, localStorage, onNavigate });
   }
 
   handleClickNewBill = () => {
-    this.onNavigate(ROUTES_PATH['NewBill']);
+    this.onNavigate(ROUTES_PATH["NewBill"]);
   };
 
   handleClickIconEye = (icon) => {
-    const billUrl = icon.getAttribute('data-bill-url');
-    const imgWidth = Math.floor($('#modaleFile').width() * 0.5);
-    $('#modaleFile')
-      .find('.modal-body')
+    const billUrl = icon.getAttribute("data-bill-url");
+    const imgWidth = Math.floor($("#modaleFile").width() * 0.5);
+    $("#modaleFile")
+      .find(".modal-body")
       .html(
         `<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`
       );
-    $('#modaleFile').modal('show');
+    $("#modaleFile").modal("show");
+  };
+
+  sortBillsDescending = (bills) => {
+    bills.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    return bills;
   };
 
   getBills = () => {
@@ -42,24 +49,30 @@ export default class {
         .list()
         .then((snapshot) => {
           const bills = snapshot.map((doc) => {
+            let formattedDate;
+            let formattedStatus;
             try {
-              return {
-                ...doc,
-                date: formatDate(doc.date),
-                status: formatStatus(doc.status),
-              };
+              formattedDate = formatDate(doc.date);
+              formattedStatus = formatStatus(doc.date);
             } catch (e) {
-              // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-              // log the error and return unformatted date in that case
-              console.log(e,'for',doc)
-              return {
-                ...doc,
-                date: doc.date,
-                status: formatStatus(doc.status),
-              };
+              console.log(e, "for", doc);
+              formattedDate = doc.date;
+              formattedStatus = doc.status;
             }
+            return {
+              ...doc,
+              formattedDate,
+              formattedStatus,
+            };
           });
-          return bills;
+
+          const sortedBills = this.sortBillsDescending(bills);
+
+          return sortedBills.map((bill) => ({
+            ...bill,
+            date: bill.formattedDate,
+            status: bill.formattedStatus,
+          }));
         });
     }
   };
